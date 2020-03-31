@@ -1,6 +1,9 @@
 const express = require('express')
-var cors = require('cors')
+const cors = require('cors')
+const bodyParser = require('body-parser')
+
 const app = express()
+app.use(bodyParser.json())
 app.use(cors())
 const port = 3000
 
@@ -33,5 +36,13 @@ app.get('/user/:id', (req, res) => {
     const userName = user.name;
     res.send({userID, userName});
 });
+
+// Post Request
+app.post('/addUser', (req, res) => {
+    const user = req.body;
+    res.send(user);
+    // console.log(req.body);
+    // res.send('POST request to the homepage')
+})
 
 app.listen(port, () => console.log(`listening on port ${port}!`))
