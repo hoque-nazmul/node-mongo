@@ -13,20 +13,12 @@ const password = process.env.DB_PASS;
 const uri = `mongodb+srv://${dbUser}:${password}@cluster0-nrdl2.mongodb.net/test?retryWrites=true&w=majority `;
 let client = new MongoClient(uri, { useNewUrlParser: true });
 
-const users = [
-    {id: '1', name: "Nazmul Hoque", age : 25, salary : 15000},
-    {id: '2', name: "Anayet Ullah", age : 24, salary : 10000},
-    {id: '3', name: "Towhid Ahmed", age : 27, salary : 20000}
-]
-
-const usernames = ["Towhid", "Khalik", "Jhankar", "Mukta", "Anayet", "Nazmul"]
-
-
+// Find Products
 app.get('/products', (req, res) => {
     client = new MongoClient(uri, { useNewUrlParser: true })
     client.connect(err => {
         const collection = client.db("onlineStore").collection("products");
-        collection.find().toArray((err, documents) => {
+        collection.find().limit(10).toArray((err, documents) => {
             if(err) {
                 console.log(err);
                 res.status(500).send({massage:err});
@@ -41,22 +33,46 @@ app.get('/products', (req, res) => {
     });
 })
 
-app.get('/users', (req, res) => {
-    res.send(users);
+// Find Single Product
+app.get('/product/:key', (req, res) => {
+    const key = req.params.key;
+    client = new MongoClient(uri, { useNewUrlParser: true })
+    client.connect(err => {
+        const collection = client.db("onlineStore").collection("products");
+        collection.find({key:key}).toArray((err, documents) => {
+            if(err) {
+                console.log(err);
+                res.status(500).send({massage:err});
+            }
+            else{
+                console.log("Data find successfully.....", documents);
+                res.send(documents[0]);
+            }
+           
+        })
+        client.close();
+    });
 });
 
-app.get('/users/:id', (req, res) => {
-    let id = req.params.id;
-    let name = usernames[id];
-    res.send({id, name});
-});
-
-app.get('/user/:id', (req, res) => {
-    let id = req.params.id;
-    let user = users.find(user => user.id === id);
-    const userID =user.id;
-    const userName = user.name;
-    res.send({userID, userName});
+// Find Products by Multiple Keys
+app.post('/getProductByKeys', (req, res) => {
+    const productKeys = req.body;
+    client = new MongoClient(uri, { useNewUrlParser: true })
+    client.connect(err => {
+        const collection = client.db("onlineStore").collection("products");
+        collection.find({ key: { $in: productKeys } }).toArray((err, documents) => {
+            if(err) {
+                console.log(err);
+                res.status(500).send({massage:err});
+            }
+            else{
+                console.log("Data find successfully.....", documents);
+                res.send(documents);
+            }
+           
+        })
+        client.close();
+    });
 });
 
 // Post Request
@@ -65,7 +81,7 @@ app.post('/addProduct', (req, res) => {
     client = new MongoClient(uri, { useNewUrlParser: true })
     client.connect(err => {
         const collection = client.db("onlineStore").collection("products");
-        collection.insertOne(product, (err, result) => {
+        collection.insert(product, (err, result) => {
             if(err) {
                 console.log(err);
                 res.status(500).send({massage:err});
@@ -79,6 +95,25 @@ app.post('/addProduct', (req, res) => {
     });
 })
 
+app.post('/orderPlaced', (req, res) => {
+    const orderDetails = req.body;
+    orderDetails.orderTime = new Date();
+    client = new MongoClient(uri, { useNewUrlParser: true })
+    client.connect(err => {
+        const collection = client.db("onlineStore").collection("orders");
+        collection.insertOne(orderDetails, (err, result) => {
+            if(err) {
+                console.log(err);
+                res.status(500).send({massage:err});
+            }
+            else{
+                console.log("Data Inserted Successfully....", result);
+                res.send(result.ops[0]);
+            }
+        })
+        client.close();
+    });
+})
 function TimeFormatter(date) {
     var hours = date.getHours();
     var minutes = date.getMinutes();
