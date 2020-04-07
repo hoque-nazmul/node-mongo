@@ -24,7 +24,7 @@ app.get('/products', (req, res) => {
                 res.status(500).send({massage:err});
             }
             else{
-                console.log("Data find successfully.....", documents);
+                console.log("Data find successfully.....");
                 res.send(documents);
             }
            
