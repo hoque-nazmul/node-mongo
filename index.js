@@ -7,7 +7,7 @@ require('dotenv').config()
 const app = express()
 app.use(bodyParser.json())
 app.use(cors())
-const port = process.env.PORT;
+const port = process.env.PORT || 5000;
 const dbUser = process.env.DB_USER;
 const password = process.env.DB_PASS;
 const uri = `mongodb+srv://${dbUser}:${password}@cluster0-nrdl2.mongodb.net/test?retryWrites=true&w=majority `;
